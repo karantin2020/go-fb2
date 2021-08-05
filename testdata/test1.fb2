@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/css" href="styles.css"?>
+<FictionBook xmlns:l="http://www.w3.org/1999/xlink" xmlns="http://www.gribuser.ru/xml/fictionbook/2.0">
+  <description>
+    <title-info>
+      <genre>test</genre><genre>golang</genre><genre>mock</genre>
+      <author><first-name>fb2test</first-name><last-name>data</last-name></author>
+
+      <book-title>dsa</book-title>
+      <annotation>
+        <p>asd tre</p>
+      </annotation>
+      <coverpage>
+        <image href="#_cover.jpg" alt="Cover" />
+      </coverpage>
+      <lang>en</lang>
+      <sequence name="Sdfa" number="9" />
+    </title-info>
+    <document-info>
+      <author>
+        <first-name>VBot</first-name>
+        <last-name>vbot</last-name>
+      </author>
+      <date value='2021-07-07'>2021</date>
+      <src-url>https://agteq.gy/work/109796</src-url>
+      <id>vse-109796</id>
+      <version>1637669264873</version>
+    </document-info>
+    <publish-info />
+    <custom-info info-type="general">
+      Custom info text
+    </custom-info>
+  </description>
+  <body>
+<section>
+  <title>
+    <p>First chapter</p>
+  </title>
+<p>Chapter text.</p>
+<p><strong>Strong text.</strong></p>
+<subtitle>* * *</subtitle>
+</section>
+<section><title><p>Chapter 2</p></title>
+<p>Chapter text.</p>
+<p><strong>Strong text.</strong></p>
+</section>
+  
+<section>
+   <title>
+    <p>Nota bene</p>
+   </title>
+   <p>Published on: <a l:href="https://g.ve/test">https://g.ve/test</a></p>
+   <subtitle>Subtitle!</subtitle>
+</section>
+
+</body>
+<binary content-type="image/jpg" id="_cover.jpg">
+SGVsbG8sIFdvcmxkISEhCg==
+</binary>
+<binary content-type="image/jpg" id="_cover1.jpg">
+SGVsbG8sIFdvcmxkISEhCg==
+</binary>
+
+</FictionBook>
