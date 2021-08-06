@@ -414,6 +414,10 @@ type SequenceType struct {
 	XmlLang string `xml:"lang,attr,omitempty"`
 }
 
+func (st *SequenceType) String() string {
+	return fmt.Sprintf("%s: %d", st.Name, st.Number)
+}
+
 type TableType struct {
 	Style string `xml:"style,attr,omitempty"`
 

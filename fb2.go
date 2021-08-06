@@ -71,12 +71,14 @@ type FB2 interface {
 	Description() string
 	Identifier() string
 	Lang() string
+	Sequence() string
 	SetTitle(title string)
 	SetAuthor(author AuthorType)
 	SetCover(srcName string) error
 	SetDescription(desc string) error
 	SetIdentifier(identifier string)
 	SetLang(lang string)
+	SetSequence(name string, number int64)
 	WriteToFile(destFilePath string) error
 	WriteToString() (string, error)
 	Body() *etree.Element
@@ -205,6 +207,12 @@ func (d *fb2) Lang() string {
 	return d.data.Description.TitleInfo.Lang
 }
 
+func (d *fb2) Sequence() string {
+	d.Lock()
+	defer d.Unlock()
+	return d.data.Description.TitleInfo.Sequence.String()
+}
+
 func (d *fb2) SetTitle(title string) {
 	d.Lock()
 	defer d.Unlock()
@@ -264,6 +272,13 @@ func (d *fb2) SetLang(lang string) {
 	d.Lock()
 	defer d.Unlock()
 	d.data.Description.TitleInfo.Lang = lang
+}
+
+func (d *fb2) SetSequence(name string, number int64) {
+	d.Lock()
+	defer d.Unlock()
+	d.data.Description.TitleInfo.Sequence.Name = name
+	d.data.Description.TitleInfo.Sequence.Number = number
 }
 
 func (d *fb2) WriteToFile(destFilePath string) error {
