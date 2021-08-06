@@ -39,7 +39,7 @@ func NewFB2(title string) FB2 {
 		body: etree.NewElement("body"),
 	}
 	v.data.Description.TitleInfo.Author = []AuthorType{}
-	v.data.Description.TitleInfo.Genre = []Genre{}
+	v.data.Description.TitleInfo.Genre = []string{}
 	v.data.Description.TitleInfo.Translator = []AuthorType{}
 	v.data.Description.DocumentInfo.Author = []AuthorType{}
 	v.data.Description.DocumentInfo.Publisher = []AuthorType{}
@@ -71,6 +71,7 @@ type FB2 interface {
 	Description() string
 	Identifier() string
 	Lang() string
+	Genre() []string
 	Sequence() string
 	SetTitle(title string)
 	SetAuthor(author AuthorType)
@@ -79,6 +80,7 @@ type FB2 interface {
 	SetIdentifier(identifier string)
 	SetLang(lang string)
 	SetSequence(name string, number int64)
+	SetGenre(g []string)
 	WriteToFile(destFilePath string) error
 	WriteToString() (string, error)
 	Body() *etree.Element
@@ -213,6 +215,12 @@ func (d *fb2) Sequence() string {
 	return d.data.Description.TitleInfo.Sequence.String()
 }
 
+func (d *fb2) Genre() []string {
+	d.Lock()
+	defer d.Unlock()
+	return d.data.Description.TitleInfo.Genre
+}
+
 func (d *fb2) SetTitle(title string) {
 	d.Lock()
 	defer d.Unlock()
@@ -279,6 +287,12 @@ func (d *fb2) SetSequence(name string, number int64) {
 	defer d.Unlock()
 	d.data.Description.TitleInfo.Sequence.Name = name
 	d.data.Description.TitleInfo.Sequence.Number = number
+}
+
+func (d *fb2) SetGenre(g []string) {
+	d.Lock()
+	defer d.Unlock()
+	copy(d.data.Description.TitleInfo.Genre, g)
 }
 
 func (d *fb2) WriteToFile(destFilePath string) error {

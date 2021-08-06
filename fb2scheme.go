@@ -427,7 +427,7 @@ type TableType struct {
 }
 
 type TitleInfoType struct {
-	Genre []Genre `xml:"genre,omitempty"`
+	Genre []string `xml:"genre,omitempty"`
 
 	Author []AuthorType `xml:"author"`
 
