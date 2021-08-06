@@ -292,13 +292,13 @@ func (d *fb2) SetSequence(name string, number int64) {
 func (d *fb2) SetGenre(g []string) {
 	d.Lock()
 	defer d.Unlock()
-	copy(d.data.Description.TitleInfo.Genre, g)
+	d.data.Description.TitleInfo.Genre = g
 }
 
 func (d *fb2) WriteToFile(destFilePath string) error {
 	d.Lock()
 	defer d.Unlock()
-	book, err := d.WriteToString()
+	book, err := d.writeToString()
 	if err != nil {
 		return fmt.Errorf("write to file error: %w", err)
 	}
@@ -312,6 +312,10 @@ func (d *fb2) WriteToFile(destFilePath string) error {
 func (d *fb2) WriteToString() (string, error) {
 	d.Lock()
 	defer d.Unlock()
+	return d.writeToString()
+}
+
+func (d *fb2) writeToString() (string, error) {
 	data, err := xml.MarshalIndent(d.data, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("write error: %w", err)
