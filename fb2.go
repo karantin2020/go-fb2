@@ -269,13 +269,14 @@ func (d *fb2) SetLang(lang string) {
 func (d *fb2) WriteToFile(destFilePath string) error {
 	d.Lock()
 	defer d.Unlock()
-	data, err := xml.MarshalIndent(d.data, "", "  ")
+	book, err := d.WriteToString()
 	if err != nil {
-		return fmt.Errorf("write error: %w", err)
+		return fmt.Errorf("write to file error: %w", err)
 	}
-	doc := etree.NewDocument()
-	doc.ReadFromBytes(data)
-	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+	err = ioutil.WriteFile(destFilePath, []byte(book), 0644)
+	if err != nil {
+		return fmt.Errorf("write to file error: %w", err)
+	}
 	return nil
 }
 
