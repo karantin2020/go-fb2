@@ -79,7 +79,7 @@ type FB2 interface {
 	SetDescription(desc string) error
 	SetIdentifier(identifier string)
 	SetLang(lang string)
-	SetSequence(name string, number int64)
+	SetSequence(name string, number interface{}) error
 	SetGenre(g []string)
 	WriteToFile(destFilePath string) error
 	WriteToString() (string, error)
@@ -282,11 +282,27 @@ func (d *fb2) SetLang(lang string) {
 	d.data.Description.TitleInfo.Lang = lang
 }
 
-func (d *fb2) SetSequence(name string, number int64) {
+func (d *fb2) SetSequence(name string, number interface{}) error {
 	d.Lock()
 	defer d.Unlock()
+	v, err := checkSequence(number)
+	if err != nil {
+		return err
+	}
 	d.data.Description.TitleInfo.Sequence.Name = name
-	d.data.Description.TitleInfo.Sequence.Number = number
+	d.data.Description.TitleInfo.Sequence.Number = v
+	return nil
+}
+
+func checkSequence(number interface{}) (string, error) {
+	n := ""
+	switch t := number.(type) {
+	case uint, uint32, uint64, int, int32, int64, float32, float64, string:
+		n = fmt.Sprintf("%v", t)
+	default:
+		return "", fmt.Errorf("invalid type of sequence number: %T", t)
+	}
+	return n, nil
 }
 
 func (d *fb2) SetGenre(g []string) {

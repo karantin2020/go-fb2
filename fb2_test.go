@@ -312,3 +312,52 @@ func Test_fb2_SetDescription(t *testing.T) {
 		})
 	}
 }
+
+func Test_checkSequence(t *testing.T) {
+	type args struct {
+		number interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "Test int",
+			args:    args{9},
+			want:    "9",
+			wantErr: false,
+		},
+		{
+			name:    "Test string",
+			args:    args{"9"},
+			want:    "9",
+			wantErr: false,
+		},
+		{
+			name:    "Test float",
+			args:    args{9.0},
+			want:    "9",
+			wantErr: false,
+		},
+		{
+			name:    "Test bool",
+			args:    args{true},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := checkSequence(tt.args.number)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("checkSequence() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("checkSequence() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

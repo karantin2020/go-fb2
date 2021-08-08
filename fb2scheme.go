@@ -409,13 +409,13 @@ type StyleLinkType struct {
 type SequenceType struct {
 	Name string `xml:"name,attr,omitempty"`
 
-	Number int64 `xml:"number,attr,omitempty"`
+	Number string `xml:"number,attr,omitempty"`
 
 	XmlLang string `xml:"lang,attr,omitempty"`
 }
 
 func (st *SequenceType) String() string {
-	return fmt.Sprintf("%s: %d", st.Name, st.Number)
+	return fmt.Sprintf("%s: %s", st.Name, st.Number)
 }
 
 type TableType struct {
