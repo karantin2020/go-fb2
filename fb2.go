@@ -288,7 +288,7 @@ func (d *fb2) SetSequence(name string, number int64) {
 	d.Lock()
 	defer d.Unlock()
 	d.data.Description.TitleInfo.Sequence.Name = name
-	d.data.Description.TitleInfo.Sequence.Number = number
+	d.data.Description.TitleInfo.Sequence.Number = fmt.Sprintf("%v", number)
 }
 
 func (d *fb2) SetGenre(g []string) {
