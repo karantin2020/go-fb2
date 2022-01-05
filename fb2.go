@@ -1,12 +1,13 @@
 package fb2
 
 import (
-	b64 "encoding/base64"
+	"encoding/base64"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	cfbp "github.com/DaRealFreak/cloudflare-bp-go"
 	"github.com/gofrs/uuid"
 	etree "github.com/rupor-github/fb2converter/etree"
 )
@@ -79,7 +81,7 @@ type FB2 interface {
 	SetDescription(desc string) error
 	SetIdentifier(identifier string)
 	SetLang(lang string)
-	SetSequence(name string, number interface{}) error
+	SetSequence(name string, number int64)
 	SetGenre(g []string)
 	WriteToFile(destFilePath string) error
 	WriteToString() (string, error)
@@ -282,27 +284,11 @@ func (d *fb2) SetLang(lang string) {
 	d.data.Description.TitleInfo.Lang = lang
 }
 
-func (d *fb2) SetSequence(name string, number interface{}) error {
+func (d *fb2) SetSequence(name string, number int64) {
 	d.Lock()
 	defer d.Unlock()
-	v, err := checkSequence(number)
-	if err != nil {
-		return err
-	}
 	d.data.Description.TitleInfo.Sequence.Name = name
-	d.data.Description.TitleInfo.Sequence.Number = v
-	return nil
-}
-
-func checkSequence(number interface{}) (string, error) {
-	n := ""
-	switch t := number.(type) {
-	case uint, uint32, uint64, int, int32, int64, float32, float64, string:
-		n = fmt.Sprintf("%v", t)
-	default:
-		return "", fmt.Errorf("invalid type of sequence number: %T", t)
-	}
-	return n, nil
+	d.data.Description.TitleInfo.Sequence.Number = number
 }
 
 func (d *fb2) SetGenre(g []string) {
@@ -423,13 +409,25 @@ func getMedia(sourcePath string) (string, error) {
 	}
 
 	var r io.ReadCloser
-	var resp *http.Response
+	// var resp *http.Response
 	// If it's a URL
 	if u.Scheme == "http" || u.Scheme == "https" {
-		resp, err = http.Get(sourcePath)
-		if err != nil {
-			return "", errors.New("error get url sourcePath")
+		log.Printf("fb2 writer info: load cover on url '%v'", sourcePath)
+
+		client := &http.Client{
+			Transport: &http.Transport{},
 		}
+		client.Transport = cfbp.AddCloudFlareByPass(client.Transport)
+		req, err := http.NewRequest("GET", sourcePath, nil)
+		if err != nil {
+			return "", fmt.Errorf("fb2 getMedia http.NewRequest error: '%v'", err)
+		}
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.8) Gecko/20100101 Firefox/88.8")
+
+		resp, err := client.Do(req)
+		// if err != nil {
+		// 	return "", errors.New("error get url sourcePath")
+		// }
 		r = resp.Body
 		// Otherwise, assume it's a local file
 	} else {
@@ -439,11 +437,28 @@ func getMedia(sourcePath string) (string, error) {
 	if err != nil {
 		return "", errors.New("error getting source")
 	}
-	b, err := ioutil.ReadAll(r)
-	uEnc := b64.StdEncoding.EncodeToString([]byte(b))
+	data, err := ioutil.ReadAll(r)
+
 	if err != nil {
-		return "", errors.New("error reading source")
+		log.Printf("fb2 writer read request error: '%v'", err)
+		return "", err
 	}
 
-	return string(uEnc), nil
+	contentType := http.DetectContentType(data)
+
+	switch contentType {
+	case "image/png":
+	case "image/jpeg":
+	default:
+		log.Printf("fb2 writer unsupported content type: '%v'", contentType)
+		return "", fmt.Errorf("unsupported content type: %s", contentType)
+	}
+	imgBase64Str := base64.StdEncoding.EncodeToString(data)
+
+	// uEnc := b64.RawStdEncoding.EncodeToString([]byte(b))
+	// if err != nil {
+	// 	return "", errors.New("error reading source")
+	// }
+
+	return string(imgBase64Str), nil
 }
