@@ -256,6 +256,43 @@ func (d *fb2) SetCover(srcName string) error {
 	return nil
 }
 
+func (d *fb2) SetBinaryCover(data []byte) error {
+	d.Lock()
+	defer d.Unlock()
+	// fmt.Println("Start SetCover")
+	coverName, err := d.addBinaryImage(data, "cover")
+	if err != nil {
+		return fmt.Errorf("in SetCover() addImage returned error: %w", err)
+	}
+	d.data.Description.TitleInfo.Coverpage = append(d.data.Description.TitleInfo.Coverpage, Coverpage{
+		Image: &InlineImageType{
+			XlinkHref: "#" + coverName,
+			Alt:       "Cover",
+		},
+	})
+	return nil
+}
+
+func (d *fb2) addBinaryImage(data []byte, name string) (string, error) {
+	contentType := http.DetectContentType(data)
+
+	switch contentType {
+	case "image/png":
+	case "image/jpeg":
+	case "image/jpg":
+	default:
+		log.Printf("fb2 writer unsupported content type: '%v'", contentType)
+		return "", fmt.Errorf("unsupported content type: %s", contentType)
+	}
+	imgBase64Str := base64.StdEncoding.EncodeToString(data)
+	d.data.Binary = append(d.data.Binary, FictionBookBinary{
+		ContentType: contentType,
+		Text:        string(imgBase64Str),
+		Id:          name,
+	})
+	return name, nil
+}
+
 func (d *fb2) SetDescription(desc string) error {
 	d.Lock()
 	defer d.Unlock()
@@ -425,9 +462,9 @@ func getMedia(sourcePath string) (string, error) {
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.8) Gecko/20100101 Firefox/88.8")
 
 		resp, err := client.Do(req)
-		// if err != nil {
-		// 	return "", errors.New("error get url sourcePath")
-		// }
+		if err != nil {
+			return "", errors.New("error get url sourcePath")
+		}
 		r = resp.Body
 		// Otherwise, assume it's a local file
 	} else {
