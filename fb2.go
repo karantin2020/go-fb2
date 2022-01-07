@@ -301,6 +301,7 @@ func (d *fb2) SetDescription(desc string) error {
 	if !strings.HasPrefix(desc, "<p>") {
 		desc = fmt.Sprintf(`<p>%s</p>`, desc)
 	}
+	desc = fmt.Sprintf(`<section>%s</section>`, desc)
 	err := doc.ReadFromString(desc)
 	if err != nil {
 		return fmt.Errorf("error SetDescription: %w", err)
