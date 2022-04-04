@@ -401,6 +401,20 @@ func (d *fb2) Data() *FictionBookScheme {
 	return &d.data
 }
 
+func cfGet(sourcePath string) (*http.Response, error) {
+	client := &http.Client{
+		Transport: &http.Transport{},
+	}
+	client.Transport = cfbp.AddCloudFlareByPass(client.Transport)
+	req, err := http.NewRequest("GET", sourcePath, nil)
+	if err != nil {
+		return nil, fmt.Errorf("cf get http.NewRequest error: '%v'", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.8) Gecko/20100101 Firefox/88.8")
+
+	return client.Do(req)
+}
+
 func validateFileSource(source string) error {
 	// fmt.Println("validateFileSource")
 	u, err := url.Parse(source)
@@ -412,7 +426,7 @@ func validateFileSource(source string) error {
 	var resp *http.Response
 	// If it's a URL
 	if u.Scheme == "http" || u.Scheme == "https" {
-		resp, err = http.Get(source)
+		resp, err = cfGet(source)
 		if err != nil {
 			return err
 		}
@@ -452,17 +466,7 @@ func getMedia(sourcePath string) (string, error) {
 	if u.Scheme == "http" || u.Scheme == "https" {
 		log.Printf("fb2 writer info: load cover on url '%v'", sourcePath)
 
-		client := &http.Client{
-			Transport: &http.Transport{},
-		}
-		client.Transport = cfbp.AddCloudFlareByPass(client.Transport)
-		req, err := http.NewRequest("GET", sourcePath, nil)
-		if err != nil {
-			return "", fmt.Errorf("fb2 getMedia http.NewRequest error: '%v'", err)
-		}
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.8) Gecko/20100101 Firefox/88.8")
-
-		resp, err := client.Do(req)
+		resp, err := cfGet(sourcePath)
 		if err != nil {
 			return "", errors.New("error get url sourcePath")
 		}
